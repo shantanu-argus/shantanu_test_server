@@ -12,6 +12,15 @@ import (
 	"shantanu-starter-game/system"
 )
 
+/*
+ TODO:
+1. setup a new component and system for movement.
+2. should take in direction and have an onTick flow to lerp from current position to new position.
+3. whenever you get a new position, you should validate if its close enought to lerped position.
+4. if its close enough, you should update to that position continue lerping.
+5. if its not close enough, you should throw a an error. Client should handle this error and try again.
+*/
+
 func main() {
 	w, err := cardinal.NewWorld(cardinal.WithDisableSignatureVerification())
 	if err != nil {
