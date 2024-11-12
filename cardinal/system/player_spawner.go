@@ -13,6 +13,13 @@ const (
 	InitialHP = 100
 )
 
+const (
+	InitialXLocation = 0
+	InitialYLocation = 0
+	InitialVelocity  = 0
+	InitialDirection = 0
+)
+
 // PlayerSpawnerSystem spawns players based on `CreatePlayer` transactions.
 // This provides an example of a system that creates a new entity.
 func PlayerSpawnerSystem(world cardinal.WorldContext) error {
@@ -22,6 +29,14 @@ func PlayerSpawnerSystem(world cardinal.WorldContext) error {
 			id, err := cardinal.Create(world,
 				comp.Player{Nickname: create.Msg.Nickname},
 				comp.Health{HP: InitialHP},
+				comp.Movement{
+					CurrentLocation: comp.Location{X: InitialXLocation, Y: InitialYLocation},
+					Velocity:        InitialVelocity,
+					CurrentDirection: comp.Direction{
+						comp.Directions[InitialDirection].X,
+						comp.Directions[InitialDirection].Y,
+					},
+				},
 			)
 			if err != nil {
 				return msg.CreatePlayerResult{}, fmt.Errorf("error creating player: %w", err)

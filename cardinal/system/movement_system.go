@@ -2,6 +2,7 @@ package system
 
 import (
 	"fmt"
+	"math"
 	"pkg.world.dev/world-engine/cardinal"
 	"pkg.world.dev/world-engine/cardinal/search/filter"
 	"pkg.world.dev/world-engine/cardinal/types"
@@ -20,8 +21,8 @@ func MovementSystem(world cardinal.WorldContext) error {
 			}
 
 			// TODO: How to get delta time?
-			movement.CurrentLocation.X += movement.Velocity * float32(movement.CurrentDirection.X)
-			movement.CurrentLocation.Y += movement.Velocity * float32(movement.CurrentDirection.Y)
+			movement.CurrentLocation.X += movement.Velocity * float64(movement.CurrentDirection.X)
+			movement.CurrentLocation.Y += movement.Velocity * float64(movement.CurrentDirection.Y)
 
 			if err := cardinal.SetComponent[comp.Movement](world, id, movement); err != nil {
 				return true
@@ -31,19 +32,24 @@ func MovementSystem(world cardinal.WorldContext) error {
 }
 
 func MovementValidationSystem(world cardinal.WorldContext) error {
-	return cardinal.EachMessage[msg.AttackPlayerMsg, msg.AttackPlayerMsgReply](
+	return cardinal.EachMessage[msg.MovementPlayerMsg, msg.MovementPlayerMsgReply](
 		world,
-		func(attack cardinal.TxData[msg.AttackPlayerMsg]) (msg.AttackPlayerMsgReply, error) {
-			playerID, playerHealth, err := queryTargetPlayer(world, attack.Msg.TargetNickname)
+		func(movement cardinal.TxData[msg.MovementPlayerMsg]) (msg.MovementPlayerMsgReply, error) {
+			playerID, playerMovementData, err := queryTargetPlayerMovementData(world, movement.Msg.TargetNickname)
 			if err != nil {
-				return msg.AttackPlayerMsgReply{}, fmt.Errorf("failed to inflict damage: %w", err)
+				return msg.MovementPlayerMsgReply{}, fmt.Errorf("failed to update movement: %w", err)
 			}
-
-			playerHealth.HP -= AttackDamage
-			if err := cardinal.SetComponent[comp.Health](world, playerID, playerHealth); err != nil {
-				return msg.AttackPlayerMsgReply{}, fmt.Errorf("failed to inflict damage: %w", err)
+			const errorTolerance float64 = 0.001
+			if math.Abs(playerMovementData.CurrentLocation.X-movement.Msg.LocationX) > errorTolerance ||
+				math.Abs(playerMovementData.CurrentLocation.Y-movement.Msg.LocationY) > errorTolerance {
+				return msg.MovementPlayerMsgReply{IsValid: false, LocationX: playerMovementData.CurrentLocation.X, LocationY: playerMovementData.CurrentLocation.Y}, nil
+			} else {
+				playerMovementData.CurrentLocation.X = movement.Msg.LocationX
+				playerMovementData.CurrentLocation.Y = movement.Msg.LocationY
+				if err := cardinal.SetComponent[comp.Movement](world, playerID, playerMovementData); err != nil {
+					return msg.MovementPlayerMsgReply{IsValid: false, LocationX: playerMovementData.CurrentLocation.X, LocationY: playerMovementData.CurrentLocation.Y}, fmt.Errorf("failed to update movement: %w", err)
+				}
+				return msg.MovementPlayerMsgReply{IsValid: true, LocationX: playerMovementData.CurrentLocation.X, LocationY: playerMovementData.CurrentLocation.Y}, nil
 			}
-
-			return msg.AttackPlayerMsgReply{Damage: AttackDamage}, nil
 		})
 }

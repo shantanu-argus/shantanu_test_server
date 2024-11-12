@@ -49,3 +49,42 @@ func queryTargetPlayer(world cardinal.WorldContext, targetNickname string) (type
 
 	return playerID, playerHealth, err
 }
+
+func queryTargetPlayerMovementData(world cardinal.WorldContext, targetNickname string) (types.EntityID, *comp.Movement, error) {
+	var playerID types.EntityID
+	var playerMovementComponent *comp.Movement
+	var err error
+	searchErr := cardinal.NewSearch().Entity(
+		filter.Exact(filter.Component[comp.Player](), filter.Component[comp.Movement]())).Each(world,
+		func(id types.EntityID) bool {
+			var player *comp.Player
+			player, err = cardinal.GetComponent[comp.Player](world, id)
+			if err != nil {
+				return false
+			}
+
+			// Terminates the search if the player is found
+			if player.Nickname == targetNickname {
+				playerID = id
+				playerMovementComponent, err = cardinal.GetComponent[comp.Movement](world, id)
+				if err != nil {
+					return false
+				}
+				return false
+			}
+
+			// Continue searching if the player is not the target player
+			return true
+		})
+	if searchErr != nil {
+		return 0, nil, err
+	}
+	if err != nil {
+		return 0, nil, err
+	}
+	if playerMovementComponent == nil {
+		return 0, nil, fmt.Errorf("player %q does not exist", targetNickname)
+	}
+
+	return playerID, playerMovementComponent, err
+}

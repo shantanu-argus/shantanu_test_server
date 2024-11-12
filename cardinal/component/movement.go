@@ -13,13 +13,13 @@ var Directions = map[int]Direction{
 }
 
 type Location struct {
-	X float32
-	Y float32
+	X float64
+	Y float64
 }
 
 type Movement struct {
 	CurrentDirection Direction
-	Velocity         float32
+	Velocity         float64
 	CurrentLocation  Location
 }
 
