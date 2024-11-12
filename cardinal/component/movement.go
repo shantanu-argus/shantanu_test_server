@@ -18,9 +18,9 @@ type Location struct {
 }
 
 type Movement struct {
-	Direction Direction
-	Velocity  float32
-	Location  Location
+	CurrentDirection Direction
+	Velocity         float32
+	CurrentLocation  Location
 }
 
 func (Movement) Name() string {
