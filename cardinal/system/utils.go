@@ -55,14 +55,14 @@ func queryTargetPlayerMovementData(world cardinal.WorldContext, targetNickname s
 	var playerMovementComponent *comp.Movement
 	var err error
 	searchErr := cardinal.NewSearch().Entity(
-		filter.Exact(filter.Component[comp.Player](), filter.Component[comp.Movement]())).Each(world,
+		filter.Exact(filter.Component[comp.Player]())).Each(world,
 		func(id types.EntityID) bool {
 			var player *comp.Player
 			player, err = cardinal.GetComponent[comp.Player](world, id)
 			if err != nil {
 				return false
 			}
-
+			fmt.Println(player)
 			// Terminates the search if the player is found
 			if player.Nickname == targetNickname {
 				playerID = id
@@ -76,6 +76,7 @@ func queryTargetPlayerMovementData(world cardinal.WorldContext, targetNickname s
 			// Continue searching if the player is not the target player
 			return true
 		})
+	fmt.Println("finding ", targetNickname)
 	if searchErr != nil {
 		return 0, nil, err
 	}

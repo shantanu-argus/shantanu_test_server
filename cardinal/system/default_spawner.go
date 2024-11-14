@@ -13,9 +13,18 @@ import (
 func SpawnDefaultPlayersSystem(world cardinal.WorldContext) error {
 	for i := 0; i < 10; i++ {
 		name := fmt.Sprintf("default-%d", i)
+		fmt.Println("Creating entity for ", name)
 		_, err := cardinal.Create(world,
 			comp.Player{Nickname: name},
 			comp.Health{HP: InitialHP},
+			comp.Movement{
+				CurrentLocation: comp.Location{X: InitialXLocation, Y: InitialYLocation},
+				Velocity:        InitialVelocity,
+				CurrentDirection: comp.Direction{
+					comp.Directions[InitialDirection].X,
+					comp.Directions[InitialDirection].Y,
+				},
+			},
 		)
 		if err != nil {
 			return err

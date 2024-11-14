@@ -1,6 +1,7 @@
 package system
 
 import (
+	"fmt"
 	"pkg.world.dev/world-engine/cardinal"
 	"pkg.world.dev/world-engine/cardinal/search/filter"
 	"pkg.world.dev/world-engine/cardinal/types"
@@ -18,6 +19,7 @@ func RegenSystem(world cardinal.WorldContext) error {
 			if err != nil {
 				return true
 			}
+			fmt.Println(id)
 			health.HP++
 			if err := cardinal.SetComponent[comp.Health](world, id, health); err != nil {
 				return true
