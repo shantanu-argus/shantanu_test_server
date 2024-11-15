@@ -2,7 +2,7 @@ package msg
 
 type MovementPlayerMsg struct {
 	TargetNickname string  `json:"target"`
-	Velocity       int     `json:"velocity"`
+	Velocity       float64 `json:"velocity"`
 	Direction      int     `json:"direction"`
 	LocationX      float64 `json:"locationX"`
 	LocationY      float64 `json:"locationY"`
